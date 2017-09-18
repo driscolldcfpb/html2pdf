@@ -1,3 +1,6 @@
+/** FORKED Version see
+ * https://github.com/driscolldcfpb/html2pdf
+ */
 /**
  * @license
  *
@@ -23,7 +26,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 /**
  * Generate a PDF from an HTML element or string using html2canvas and jsPDF.
  *
@@ -32,7 +34,8 @@
  *    'image' ('type' and 'quality'), and 'html2canvas' / 'jspdf', which are
  *    sent as settings to their corresponding functions.
  */
-var html2pdf = (function(html2canvas, jsPDF) {
+define(['jquery','underscore','html2canvas_fork','jspdf'],function($,underscore,html2canvas) {
+
 
   /* ---------- MAIN FUNCTION ---------- */
 
@@ -72,14 +75,35 @@ var html2pdf = (function(html2canvas, jsPDF) {
       });
     }
 
-    // Render the canvas and pass the result to makePDF.
-    var onRendered = opt.html2canvas.onrendered || function() {};
-    opt.html2canvas.onrendered = function(canvas) {
-      onRendered(canvas);
-      document.body.removeChild(overlay);
-      html2pdf.makePDF(canvas, pageSize, opt);
+
+
+    if(opt.useCanvasElems!==undefined && opt.useCanvasElems===true){
+      //new custom
+      //opt.html2canvas.renderer use default which is now ExtraLargeCanvas
+      opt.html2canvas.usesCanvasElements=true;
+
+      var onRendered = opt.html2canvas.onrendered || function() {};
+      opt.html2canvas.onrendered = function(canvas) {
+        onRendered(canvas);
+        document.body.removeChild(overlay);
+        var canvasElems = canvas.canvasElems;
+        html2pdf.makePDFfromCanvasElems(canvasElems, pageSize, opt);
+
+      };
+      html2canvas(container, opt.html2canvas);
     }
-    html2canvas(container, opt.html2canvas);
+    else{
+      // Render the canvas and pass the result to makePDF.
+      var onRendered = opt.html2canvas.onrendered || function() {};
+      opt.html2canvas.onrendered = function(canvas) {
+        onRendered(canvas);
+        document.body.removeChild(overlay);
+        html2pdf.makePDF(canvas, pageSize, opt);
+      };
+      html2canvas(container, opt.html2canvas);
+    }
+
+
   };
 
   html2pdf.parseInput = function(source, opt) {
@@ -196,7 +220,7 @@ var html2pdf = (function(html2canvas, jsPDF) {
       if (page)  pdf.addPage();
       var imgData = pageCanvas.toDataURL('image/' + opt.image.type, opt.image.quality);
       pdf.addImage(imgData, opt.image.type, opt.margin[1], opt.margin[0],
-                   pageSize.inner.width, pageHeight);
+          pageSize.inner.width, pageHeight);
 
       // Add hyperlinks.
       if (opt.enableLinks) {
@@ -215,7 +239,72 @@ var html2pdf = (function(html2canvas, jsPDF) {
     pdf.save( opt.filename );
   }
 
+  html2pdf.makePDFfromCanvasElems = function(canvasElems, pageSize, opt){
+    if(canvasElems!==undefined){
+      // Initialize the PDF.
+      var pdf = new jsPDF(opt.jsPDF);
 
+      for(var i=0; i<canvasElems.length; i++){
+        var canvas = canvasElems[i];
+
+        // Calculate the number of pages.
+        var ctx = canvas.getContext('2d');
+
+        var pxFullHeight = canvas.height;
+        var pxPageHeight = Math.floor(canvas.width * pageSize.inner.ratio);
+        var nPages = Math.ceil(pxFullHeight / pxPageHeight);
+
+
+        var pageCanvas = document.createElement('canvas');
+        var pageCtx = pageCanvas.getContext('2d');
+
+        //new
+        var pageHeight = pageSize.inner.height;
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = pxPageHeight;
+
+        for (var page=0; page<nPages; page++) {
+          // Trim the final page to reduce file size.
+          if (page === nPages-1) {
+            pageCanvas.height = pxFullHeight % pxPageHeight;
+            pageHeight = pageCanvas.height * pageSize.inner.width / pageCanvas.width;
+          }
+
+          // Display the page.
+          var w = pageCanvas.width;
+          var h = pageCanvas.height;
+          pageCtx.fillStyle = 'white';
+          pageCtx.fillRect(0, 0, w, h);
+          pageCtx.drawImage(canvas, 0, page*pxPageHeight, w, h, 0, 0, w, h);
+
+          // Add the page to the PDF.
+          if (page)  pdf.addPage();
+          var imgData = pageCanvas.toDataURL('image/' + opt.image.type, opt.image.quality);
+          pdf.addImage(imgData, opt.image.type, opt.margin[1], opt.margin[0],
+              pageSize.inner.width, pageHeight);
+
+          // Add hyperlinks.
+          if (opt.enableLinks) {
+            var pageTop = page * pageSize.inner.height;
+            opt.links.forEach(function(link) {
+              if (link.clientRect.top > pageTop && link.clientRect.top < pageTop + pageSize.inner.height) {
+                var left = opt.margin[1] + link.clientRect.left;
+                var top = opt.margin[0] + link.clientRect.top - pageTop;
+                pdf.link(left, top, link.clientRect.width, link.clientRect.height, { url: link.el.href });
+              }
+            });
+          }
+        }
+
+      }
+      // Finish the PDF.
+      pdf.save( opt.filename );
+
+    }
+    else{
+      console.log('canvasElems undefined');
+    }
+  }
   /* ---------- UTILS ---------- */
 
   // Determine the type of a variable/object.
@@ -384,4 +473,5 @@ var html2pdf = (function(html2canvas, jsPDF) {
 
   // Expose the html2pdf function.
   return html2pdf;
-}(html2canvas, jsPDF));
+
+});

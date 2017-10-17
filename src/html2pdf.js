@@ -34,7 +34,7 @@
  *    'image' ('type' and 'quality'), and 'html2canvas' / 'jspdf', which are
  *    sent as settings to their corresponding functions.
  */
-define(['jquery','underscore','html2canvas_fork','jspdf'],function($,underscore,html2canvas) {
+define(['jquery','underscore','html2canvas_fork','jspdf'],function($,underscore,html2canvas, jsPDF) {
 
 
   /* ---------- MAIN FUNCTION ---------- */

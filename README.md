@@ -5,16 +5,25 @@ html2pdf converts any webpage or element into a printable PDF entirely client-si
 ## Install
 
 1. Copy `html2pdf.js` to your project directory.
-2. Fetch the dependencies `html2canvas` and `jsPDF`, which can be found in the `vendor` folder.
-3. Include the files in your HTML document (**order is important**, otherwise `jsPDF` will override `html2canvas` with its own internal implementation):
+2. Fetch the dependencies `html2canvas` and `jsPDF`, which can be found in the above repositories.
+3. Include the files in your HTML document , one way is to use require.js
 
-```html
-<script src="jspdf.min.js"></script>
-<script src="html2canvas.min.js"></script>
-<script src="html2pdf.js"></script>
+```js
+require.config({
+        deps: ['main'],
+        paths:
+        {
+            jquery: '../../vendor/jquery/jquery',
+            'es6promise':'../../vendor/es6-promise/es6-promise',
+            jspdf: '../../vendor/jspdf/jspdf.debug',
+            html2canvas_fork:'../../vendor/html2canvas_fork/html2canvas'
+
+         }
+      })
+
 ```
 
-**Note:** For best results, use the custom build of `html2canvas` found in the `vendor` folder, which contains added features and hotfixes.
+**Note:** For best results, use require.js to manage your front-end dependencies when using this library.
 
 ## Usage
 
@@ -30,14 +39,20 @@ html2pdf(element);
 The PDF can be configured using an optional `opt` parameter:
 
 ```js
-var element = document.getElementById('element-to-print');
-html2pdf(element, {
-  margin:       1,
-  filename:     'myfile.pdf',
-  image:        { type: 'jpeg', quality: 0.98 },
-  html2canvas:  { dpi: 192, letterRendering: true },
-  jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-});
+Promise = require('es6promise').Promise;
+
+            var element = document.getElementById('case-main');
+
+            html2pdfnew(element, {
+               margin: 0.25,
+               filename: 'newpdf.pdf',
+               image: { type: 'jpeg', quality: 0.98},
+               html2canvas: {dpi: 192, letterRendering: true },
+               useCanvasElems: true,
+               jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait'}
+            });
+
+
 ```
 
 The `opt` parameter has the following optional fields:
@@ -48,6 +63,7 @@ The `opt` parameter has the following optional fields:
 |filename    |string          |'file.pdf'                    |The default filename of the exported PDF.                                                    |
 |image       |object          |{type: 'jpeg', quality: 0.95} |The image type and quality used to generate the PDF. See the Extra Features section below.   |
 |enableLinks |boolean         |true                          |If enabled, PDF hyperlinks are automatically added ontop of all anchor tags.                 |
+|useCanvasElems |boolean         |true                          |If enabled, will use multiple Canvas elements in order to be able to convert large html pages to PDF. This is a custom enhancement by driscolldcfpb.                 |
 |html2canvas |object          |{ }                           |Configuration options sent directly to `html2canvas` ([see here](https://html2canvas.hertzen.com/documentation.html#available-options) for usage).|
 |jsPDF       |object          |{ }                           |Configuration options sent directly to `jsPDF` ([see here](http://rawgit.com/MrRio/jsPDF/master/docs/jsPDF.html) for usage).|
 
@@ -78,26 +94,22 @@ These options are limited to the available settings for [HTMLCanvasElement.toDat
 
 ## Dependencies
 
-html2pdf depends on the external packages [`html2canvas`](https://github.com/niklasvh/html2canvas) and [`jsPDF`](https://github.com/MrRio/jsPDF).
-
-For best results, use [this custom build](https://github.com/eKoopmans/html2canvas/tree/develop) of `html2canvas`, which includes bugfixes and adds support for box-shadows and custom resolutions (via the `dpi`/`scale` options).
+html2pdf depends on the 2 external packages [`html2canvas`](https://github.com/driscolldcfpb/html2canvas) and [`jsPDF`](https://github.com/driscolldcfpb/jsPDF).
 
 ## Contributing
-
-### Issues
-
-When submitting an issue, please provide reproducible code that highlights the issue, preferably by creating a fork of [this template jsFiddle](https://jsfiddle.net/o0kL8zkk/) (which has html2canvas and its dependencies already included as external resources). Remember that html2pdf uses [html2canvas](https://github.com/niklasvh/html2canvas) and [jsPDF](https://github.com/MrRio/jsPDF) as dependencies, so it's a good idea to check each of those repositories' issue trackers to see if your problem has already been addressed.
 
 ### Pull requests
 
 Right now, html2pdf is a single source file located in `/src/`. If you want to create a new feature or bugfix, feel free to fork and submit a pull request!
 
 ## Credits
+[David Driscoll] (https://github.com/driscolldcfpb
 
+Forked from in order to add enhancement for large html pages to allow them to export to PDF.
 [Erik Koopmans](https://github.com/eKoopmans)
 
 ## License
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2017 Erik Koopmans <[http://www.erik-koopmans.com/](http://www.erik-koopmans.com/)>
+Copyright (c) 2017 >

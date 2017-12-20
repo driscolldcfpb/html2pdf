@@ -1,0 +1,23 @@
+{
+  "name": "html2pdf",
+  "version": "0.8.3",
+  "description": "html to pdf",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/driscolldcfpb/html2pdf.git"
+  },
+  "keywords": [
+    "html",
+    "pdf"
+  ],
+  "author": "david driscoll",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/driscolldcfpb/html2pdf/issues"
+  },
+  "homepage": "https://github.com/driscolldcfpb/html2pdf#readme"
+}
